@@ -2,7 +2,7 @@ from flask import Flask, render_template, request, copy_current_request_context
 from flask_socketio import SocketIO, emit, join_room, rooms, disconnect
 from typing import List
 from collections import defaultdict
-
+# pip install gevent-websocket  
 
 class EventSubscriberIF:
 
@@ -16,7 +16,7 @@ class WebSocketServer:
         self._host = host
         self._port = port
         self._message_delay = message_delay
-        self._socketio = SocketIO(app, async_mode=async_mode, cors_allowed_origins=["http://localhost:3000", "http://localhost:7000"])
+        self._socketio = SocketIO(app, async_mode=async_mode, cors_allowed_origins=["http://localhost:3000", "http://localhost:3001", "http://localhost:3002", "http://localhost:7000"])
         self._client_sids = []
         self._init_call_backs()
 
@@ -96,7 +96,7 @@ if __name__ == '__main__':
     host = "localhost"
     async_mode = None
 
-    log_file_path = "/home/mluebberin/repositories/github/private_workspace/mlgym/src/ml_gym/backend/streaming/log.txt"
+    log_file_path = "./event_storage.log"
 
     message_delay = 0.1  # in seconds
 
