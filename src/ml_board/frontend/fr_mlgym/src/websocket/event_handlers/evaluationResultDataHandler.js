@@ -1,7 +1,7 @@
 const handleExperimentStatusData = (data) => {
     // console.log("In Handle Exp = ",data);
     let exp_eval_result_data = {
-        epoch: [data.epoch],
+        epoch: data.epoch,
         experiment_id: data.experiment_id,
         grid_search_id: data.grid_search_id
     };

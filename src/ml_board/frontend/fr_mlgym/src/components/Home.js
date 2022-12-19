@@ -1,25 +1,7 @@
 import React from "react";
-import { connect } from 'react-redux';
-// import { LineChart } from "recharts";
-// import { CartesianGrid             } from "recharts";
-// import { XAxis                     } from "recharts";
-// import { YAxis                     } from "recharts";
-// import { Tooltip                   } from "recharts";
-// import { Legend                    } from "recharts";
-// import { Line                      } from "recharts";
-import { useSelector } from 'react-redux';
+import { connect, useSelector } from 'react-redux';
 import { Line } from "react-chartjs-2";
-import {
-    Chart as ChartJS,
-    CategoryScale,
-    LinearScale,
-    PointElement,
-    LineElement,
-    Title,
-    Tooltip,
-    Legend,
-    Filler
-} from 'chart.js'
+import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, Filler, Colors } from 'chart.js'
 ChartJS.register(
     CategoryScale,
     LinearScale,
@@ -28,124 +10,186 @@ ChartJS.register(
     Title,
     Tooltip,
     Legend,
-    Filler
+    Filler,
+    Colors
 )
 
+function getRandomColor() {
+    var letters = '0123456789ABCDEF'.split('');
+    var color = '#';
+    for (var i = 0; i < 6; i++ ) {
+        color += letters[Math.floor(Math.random() * 16)];
+    }
+    return color;
+}
 
 function Home () {
     const evalResult = useSelector((state) => state.evalResult);
-    let datasets = [];
-    let datasets2 = [];
-    let datasets3 = [];
-    let datasets4 = [];
+    let colors_mapped_to_exp_id = JSON.parse(localStorage.getItem("colors_mapped_to_exp_id")) || {};
+    let train_f1_score_macro_datasets = [];
+    let train_precision_macro_datasets = [];
+    let train_recall_macro_datasets = [];
+    let train_cross_entropy_loss_datasets = [];
     let labels = [];
     let ids = [];
-    evalResult.forEach((evalData, index) => {
-        // console.log("evalData = ",evalData);
-        // let prevData = {};
+    evalResult.forEach((evalData) => {
+
         let prevIndex = null;
+
         if(ids.includes(evalData.experiment_id))
         {
             prevIndex = ids.indexOf(evalData.experiment_id);
-            // prevData = evalResult[prevIndex];
         }
         else
         {
             ids.push(evalData.experiment_id);
+            if(colors_mapped_to_exp_id[evalData.experiment_id] === undefined)
+            {
+                let random_color = getRandomColor();
+                colors_mapped_to_exp_id[evalData.experiment_id] = random_color;
+                localStorage.setItem("colors_mapped_to_exp_id",JSON.stringify(colors_mapped_to_exp_id));
+            }
         }
-        if(!labels.includes(evalData.epoch[0]))
+        if(!labels.includes(evalData.epoch))
         {
-            labels.push(evalData.epoch[0]);
+            labels.push(evalData.epoch);
         }
 
         if(prevIndex!==null)
         {
-            datasets[prevIndex].data = [...datasets[prevIndex].data, ...evalData.train_F1_SCORE_macro]
-            datasets2[prevIndex].data = [...datasets2[prevIndex].data, ...evalData.train_PRECISION_macro]
-            datasets3[prevIndex].data = [...datasets3[prevIndex].data, ...evalData.train_RECALL_macro]
-            datasets4[prevIndex].data = [...datasets4[prevIndex].data, ...evalData.train_cross_entropy_loss]
+            train_f1_score_macro_datasets[prevIndex].data = [...train_f1_score_macro_datasets[prevIndex].data, ...evalData.train_F1_SCORE_macro]
+            
+            train_precision_macro_datasets[prevIndex].data = [...train_precision_macro_datasets[prevIndex].data, ...evalData.train_PRECISION_macro]
+            
+            train_recall_macro_datasets[prevIndex].data = [...train_recall_macro_datasets[prevIndex].data, ...evalData.train_RECALL_macro]
 
+            train_cross_entropy_loss_datasets[prevIndex].data = [...train_cross_entropy_loss_datasets[prevIndex].data, ...evalData.train_cross_entropy_loss]
         }
         else
-        {
-            datasets.push({
+        {            
+            train_f1_score_macro_datasets.push({
+                exp_id: evalData.experiment_id,
                 label: "experiment_"+evalData.experiment_id.toString(),
                 data: evalData.train_F1_SCORE_macro,
                 fill: false,
-                backgroundColor: "rgba(75,192,192,0.2)",
-                borderColor: "rgba(75,192,192,1)"
+                backgroundColor: colors_mapped_to_exp_id[evalData.experiment_id],
+                borderColor: colors_mapped_to_exp_id[evalData.experiment_id]
             });
 
-            datasets2.push({
+            train_precision_macro_datasets.push({
+                exp_id: evalData.experiment_id,
                 label: "experiment_"+evalData.experiment_id.toString(),
                 data: evalData.train_PRECISION_macro,
                 fill: false,
-                backgroundColor: "green",
-                borderColor: "green"
+                backgroundColor: colors_mapped_to_exp_id[evalData.experiment_id],
+                borderColor: colors_mapped_to_exp_id[evalData.experiment_id]
             });
 
-            datasets3.push({
+            train_recall_macro_datasets.push({
+                exp_id: evalData.experiment_id,
                 label: "experiment_"+evalData.experiment_id.toString(),
                 data: evalData.train_RECALL_macro,
                 fill: false,
-                backgroundColor: "pink",
-                borderColor: "pink"
+                backgroundColor: colors_mapped_to_exp_id[evalData.experiment_id],
+                borderColor: colors_mapped_to_exp_id[evalData.experiment_id]
             });
 
-            datasets4.push({
+            train_cross_entropy_loss_datasets.push({
+                exp_id: evalData.experiment_id,
                 label: "experiment_"+evalData.experiment_id.toString(),
                 data: evalData.train_cross_entropy_loss,
                 fill: false,
-                backgroundColor: "red",
-                borderColor: "red"
+                backgroundColor: colors_mapped_to_exp_id[evalData.experiment_id],
+                borderColor: colors_mapped_to_exp_id[evalData.experiment_id],
+                xAxisID: 'x'
             });
         }
     })
-    let data = {};
-    let data2 = {};
-    let data3 = {};
-    let data4 = {};
 
-    if(evalResult)
-    {
-        data = {
-            labels: labels,
-            datasets: datasets
-        }
-        data2 = {
-            labels: labels,
-            datasets: datasets2
-        }
-        data3 = {
-            labels: labels,
-            datasets: datasets3
-        }
-        data4 = {
-            labels: labels,
-            datasets: datasets4
+    let train_f1_score_macro = {};
+    let train_precision_macro = {};
+    let train_recall_macro = {};
+    let train_cross_entropy_loss = {};
+    let common_options = {
+        plugins: {
+            title: {
+                display: true,
+                text: 'Train: ',
+                color: 'black',
+                font: {
+                    weight: 'bold',
+                    size: '20px'
+                }
+            }
         }
     }
-    // console.log("data = ",data);
+    if(evalResult)
+    {
+        let train_f1_score_macro_options = structuredClone(common_options);
+        train_f1_score_macro_options.plugins.title.text += " F1 Score Macro";
+        train_f1_score_macro = {
+            train_f1_score_macro_data: {
+                labels: labels,
+                datasets: train_f1_score_macro_datasets.sort((a,b) => (a.exp_id > b.exp_id) ? 1 : -1)
+            },
+            options: train_f1_score_macro_options
+        }
+
+        let train_precision_macro_options = structuredClone(common_options);
+        train_precision_macro_options.plugins.title.text += " Precision Macro";
+        train_precision_macro = {
+            train_precision_macro_data : {
+                labels: labels,
+                datasets: train_precision_macro_datasets.sort((a,b) => (a.exp_id > b.exp_id) ? 1 : -1),
+            },
+            options: train_precision_macro_options
+        }
+
+        let train_recall_macro_options = structuredClone(common_options);
+        train_recall_macro_options.plugins.title.text += " Recall Macro";
+        train_recall_macro = {
+            train_recall_macro_data: {
+                labels: labels,
+                datasets: train_recall_macro_datasets.sort((a,b) => (a.exp_id > b.exp_id) ? 1 : -1)
+            },
+            options: train_recall_macro_options
+        }
+
+        let train_cross_entropy_loss_options = structuredClone(common_options);
+        train_cross_entropy_loss_options.plugins.title.text += " Cross Entropy Loss";
+        train_cross_entropy_loss = {
+            train_cross_entropy_loss_data: {
+                labels: labels,
+                datasets: train_cross_entropy_loss_datasets.sort((a,b) => (a.exp_id > b.exp_id) ? 1 : -1)
+            },
+            options: train_cross_entropy_loss_options
+        }
+    }
+
     return(
         <div>
-            <div>
-                Home Page
+            <div style={styles.main_h2}>
+                Training Scores & Loss
             </div>
             <div style={styles.main}>
                 {
-                    data ?
+                    train_f1_score_macro ?
                     <div style={styles.child}>
-                        <b>train_F1_SCORE_macro</b>
-                        <Line data={data} />
+                        <Line 
+                            data={train_f1_score_macro.train_f1_score_macro_data} 
+                            options={train_f1_score_macro.options}
+                        />
                     </div>
                     :
                     null
                 }
                 {
-                    data2 ?
+                    train_precision_macro ?
                     <div style={styles.child}>
-                        <b>train_PRECISION_macro</b>
-                        <Line data={data2} />
+                        <Line 
+                            data={train_precision_macro.train_precision_macro_data} 
+                            options={train_precision_macro.options}
+                        />
                     </div>
                     :
                     null
@@ -154,20 +198,22 @@ function Home () {
             <hr/>
             <div style={styles.main}>
                 {
-                    data3 ?
+                    train_recall_macro ?
                     <div style={styles.child}>
-                        <b>train_RECALL_macro</b>
-                        <Line data={data3} />
+                        <Line 
+                            data={train_recall_macro.train_recall_macro_data} 
+                            options={train_recall_macro.options}
+                        />
                     </div>
                     :
                     null
                 }
                 {
-                    data4 ?
+                    train_cross_entropy_loss ?
                     <div style={styles.child}>
-                        <b>train_cross_entropy_loss</b>
                         <Line
-                            data={data4} 
+                            data={train_cross_entropy_loss.train_cross_entropy_loss_data}
+                            options={train_cross_entropy_loss.options}
                         />
                     </div>
                     :
@@ -179,6 +225,18 @@ function Home () {
 }
 
 const styles = {
+    main_h2: {
+        display: 'flex',
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: 'lightblue',
+        color: 'darkblue',
+        fontSize: '30px',
+        fontWeight: 'bold',
+        padding: '10px',
+        marginBottom: '10px'
+    },
     main: {
       display: 'flex',
       flexDirection: 'row',
@@ -192,94 +250,11 @@ const styles = {
         marginRight: "20px"
     }
 }
-// class Home extends React.Component {
-
-//     constructor(props) {
-//         super(props);
-//         this.state = {
-//             data: [],
-//             loss: [],
-//             labels: []
-//         }
-//     }
-
-//     componentDidMount() {
-//         let data = {};
-//         if(this.props.evalResult && this.props.evalResult.length > 0 && this.props.evalResult[1] && this.props.evalResult[1].train_F1_SCORE_macro.length>1)
-//         {
-//             let d = this.props.evalResult[1];
-//             console.log("d = ",d.train_F1_SCORE_macro);
-            
-//             this.setState({
-//                 data: data
-//             });
-//         }
-//     }
-
-//     render() {
-//         return(
-//             <div>
-//                 <div>
-//                     Hii Home
-//                 </div>
-//                 {
-//                     this.props.evalResult && this.props.evalResult.length > 0 && this.props.evalResult[1] && this.props.evalResult[1].train_F1_SCORE_macro.length > 1?
-//                     // <div>
-//                     //     Available!
-//                     // </div>
-//                     <Line 
-//                         data={
-//                             {
-//                                 labels: this.props.evalResult[1].epoch,
-//                                 datasets: [
-//                                     {
-//                                         label: "First dataset",
-//                                         data: this.props.evalResult[1].train_F1_SCORE_macro,
-//                                         fill: true,
-//                                         backgroundColor: "rgba(75,192,192,0.2)",
-//                                         borderColor: "rgba(75,192,192,1)"
-//                                     }
-//                                 ]
-//                             }
-//                         } 
-//                     />
-//                     // <LineChart 
-//                     //     width={730} 
-//                     //     height={250} 
-//                     //     data={this.props.evalResult} 
-//                     //     margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-//                     // >
-//                     //     <CartesianGrid strokeDasharray="3 3" />
-//                     //     <XAxis dataKey="epoch" />
-//                     //     <YAxis />
-//                     //     <Tooltip />
-//                     //     <Legend />
-//                     //     {
-//                     //         this.props.evalResult.map((data, index)=>{
-//                     //             return(
-//                     //                 <Line 
-//                     //                     key={index}
-//                     //                     type="monotone" 
-//                     //                     data={data}
-//                     //                     dataKey={index}
-//                     //                     stroke="#8884d8" 
-//                     //                 />
-//                     //             );
-//                     //         })
-//                     //     }
-//                     // </LineChart>
-//                     :
-//                     <div>
-//                         No data available
-//                     </div>
-//                 }
-//             </div>
-//         );
-//     }
-// }
 
 const mapStateToProps = (state) => ({
     evalResult: state.evalResult
 });
+
+// const mapDispatchToProps = { mapExperimentIdToColor };
 
 export default connect(mapStateToProps)(Home);

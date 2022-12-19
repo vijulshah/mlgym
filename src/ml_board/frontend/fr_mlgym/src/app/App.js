@@ -3,7 +3,6 @@ import { Route, Routes } from 'react-router-dom';
 import Home from '../components/Home';
 import DedicatedWorkerClass from '../webworkers/DedicatedWorkerClass';
 import { connect } from 'react-redux';
-// import { saveEvalResultData } from '../redux/testSlice';
 import { saveEvalResultData } from '../redux/actions/ExperimentActions';
 
 class App extends Component {
@@ -17,6 +16,7 @@ class App extends Component {
     }
 
     componentDidMount() {
+        localStorage.clear();
         this.createWorker();
     }
 
