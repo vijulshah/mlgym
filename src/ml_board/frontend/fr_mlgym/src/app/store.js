@@ -1,5 +1,5 @@
 import { configureStore } from '@reduxjs/toolkit';
-import ExperimentsReducer from '../redux/reducers/ExperimentsReducer';
+import ExperimentsReducer from 'src/redux/reducers/ExperimentsReducer';
 
 const store = configureStore ({
     reducer: ExperimentsReducer
