@@ -6,7 +6,8 @@ const DEFAULT_URL = 'http://127.0.0.1:7000/';
 
 class SocketClass {
     
-    constructor(dataCallback = null, socketURL = null) {
+    constructor(reduxData = undefined, dataCallback = null, socketURL = null) {
+        this.reduxData = reduxData
         this.defaultURL = socketURL || DEFAULT_URL
         this.webSocket = null
         this.dataCallback = dataCallback
@@ -61,15 +62,7 @@ class SocketClass {
                 console.log("Job scheduled found")
                 break;
             case EVENT_TYPE.EVALUATION_RESULT:
-                result = handleEvaluationResultData(parsedMsg["payload"]);
-                if(result === null)
-                {
-                    console.log("Eval result found - with val")
-                }
-                else
-                {
-                    console.log("Eval result found - with train")
-                }
+                result = handleEvaluationResultData(parsedMsg["payload"], this.reduxData);
                 break;
             case EVENT_TYPE.EXPERIMENT_CONFIG:
                 console.log("Exp config found")

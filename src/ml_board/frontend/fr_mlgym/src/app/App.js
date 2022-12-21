@@ -10,9 +10,6 @@ class App extends Component {
     constructor(props) {
         super(props);
         this.mlgymWorker = null;
-        this.state = {
-            evalResult: []
-        }
     }
 
     componentDidMount() {
@@ -31,18 +28,14 @@ class App extends Component {
 
     createWorker = () => {
         this.mlgymWorker = new DedicatedWorkerClass(this.workerOnMessageHandler);
-        this.mlgymWorker.postMessage("START");
+        this.mlgymWorker.postMessage(this.props.evalResult);
     }
 
-    workerOnMessageHandler = (data) => {
-        if(data && data.experiment_id)
+    workerOnMessageHandler = async(data) => {
+        if(data && data.grid_search_id !== null && data.experiments !== undefined)
         {
-            this.setState({
-                evalResult: [...this.state.evalResult, data]
-            },async()=>{
-                await this.props.saveEvalResultData(data);
-                console.log("Data from redux = ",this.props.evalResult);
-            });
+            await this.props.saveEvalResultData(data);
+            console.log("Data from redux = ",this.props.evalResult);
         }
     }
 }

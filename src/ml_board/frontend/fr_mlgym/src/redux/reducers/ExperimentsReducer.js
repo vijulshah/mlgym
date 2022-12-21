@@ -3,14 +3,18 @@ import {
 } from '../actions/ExperimentActions.js';
 
 const initialState = {
-    evalResult: []
+    evalResult: {
+        grid_search_id: null,
+        experiments: {},
+        colors_mapped_to_exp_id: {}
+    }
 }
 
 export default function expReducer(state = initialState, action) {
     switch (action.type) {
         case EVAL_RESULT:
             return {
-                evalResult: [...state.evalResult, action.evalResultData]
+                evalResult: action.evalResultData
             }
         default:
             return state;
