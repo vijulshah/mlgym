@@ -1,6 +1,6 @@
 import {
     EVAL_RESULT
-} from '../actions/ExperimentActions.js';
+} from '../actions/ExperimentActions';
 
 const initialState = {
     evalResult: {
@@ -10,7 +10,7 @@ const initialState = {
     }
 }
 
-export default function expReducer(state = initialState, action) {
+export default function expReducer(state = initialState, action: any) {
     switch (action.type) {
         case EVAL_RESULT:
             return {

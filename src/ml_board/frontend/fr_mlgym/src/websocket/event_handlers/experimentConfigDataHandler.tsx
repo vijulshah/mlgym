@@ -1,5 +1,4 @@
-const handleExperimentConfigData = (data) => {
-    
+const handleExperimentConfigData = (data: any) => {
     return "Done";
 }
 

@@ -5,9 +5,24 @@ import DedicatedWorkerClass from '../webworkers/DedicatedWorkerClass';
 import { connect } from 'react-redux';
 import { saveEvalResultData } from '../redux/actions/ExperimentActions';
 
-class App extends Component {
+type AppProps = {
+    evalResult: any
+    saveEvalResultData: Function
+}
+
+type AppState = {
     
-    constructor(props) {
+}
+
+type AppInterface = {
+    mlgymWorker: any
+}
+
+class App extends Component<AppProps, AppState> implements AppInterface{
+    
+    mlgymWorker: any
+    
+    constructor(props: any) {
         super(props);
         this.mlgymWorker = null;
     }
@@ -27,11 +42,11 @@ class App extends Component {
     }
 
     createWorker = () => {
-        this.mlgymWorker = new DedicatedWorkerClass(this.workerOnMessageHandler);
+        this.mlgymWorker = new DedicatedWorkerClass(Object(this.workerOnMessageHandler));
         this.mlgymWorker.postMessage(this.props.evalResult);
     }
 
-    workerOnMessageHandler = async(data) => {
+    workerOnMessageHandler = async(data: any) => {
         if(data && data.grid_search_id !== null && data.experiments !== undefined)
         {
             await this.props.saveEvalResultData(data);
@@ -40,7 +55,7 @@ class App extends Component {
     }
 }
 
-const mapStateToProps = (state) => ({
+const mapStateToProps = (state: any) => ({
     evalResult: state.evalResult
 });
 

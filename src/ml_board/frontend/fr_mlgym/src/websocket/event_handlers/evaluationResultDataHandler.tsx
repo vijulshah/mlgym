@@ -1,4 +1,56 @@
-const handleExperimentStatusData = (data, reduxData) => {
+type reduxData = {
+    grid_search_id: string,
+    experiments: {
+        [key: string]: {
+            data: {
+                labels: Array<number>,
+                datasets: Array<{
+                    exp_id: number,
+                    label: string,
+                    data: Array<number>,
+                    fill: Boolean,
+                    backgroundColor: string,
+                    borderColor: string 
+                }>
+            },
+            options: {
+                plugins: {
+                    title: {
+                        display: Boolean,
+                        text: string,
+                        color: string,
+                        font: {
+                            weight: string,
+                            size: string
+                        }
+                    }
+                }
+            },
+            ids_to_track_and_find_exp_id: Array<number>
+        };
+    },
+    colors_mapped_to_exp_id: {
+        [key: number]: string
+    }
+}
+
+type data = {
+    epoch: number,
+    grid_search_id: string, 
+    experiment_id: number,
+    metric_scores: Array<{
+        metric: string, 
+        split: string,
+        score: number
+    }>,
+    loss_scores: Array<{
+        loss: string, 
+        split: string,
+        score: number
+    }>
+}
+
+const handleExperimentStatusData = (data: data, reduxData: reduxData) => {
     let exp = undefined;
     if(reduxData.grid_search_id !== null) {
         exp = reduxData.experiments;
@@ -125,7 +177,7 @@ const handleExperimentStatusData = (data, reduxData) => {
     }
     
     reduxData.experiments = exp;
-    console.log("In Handle Exp reduxData = ",reduxData);
+    // console.log("In Handle Exp reduxData = ",reduxData);
     
     return reduxData;
     
